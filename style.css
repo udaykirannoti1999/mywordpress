@@ -1,0 +1,19 @@
+/* Custom styles */
+h1 {
+    font-size: 32px;
+    color: #333;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #005177;
+}
+
