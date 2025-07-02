@@ -11,16 +11,7 @@ pipeline {
         stage('Get Instance ID') {
             steps {
                 script {
-                    INSTANCE_ID = sh(
-                        script: """
-                        aws ec2 describe-instances \\
-                            --filters "Name=tag:Name,Values=${INSTANCE_NAME}" "Name=instance-state-name,Values=running,stopped" \\
-                            --query "Reservations[*].Instances[*].InstanceId" \\
-                            --region ${REGION} \\
-                            --output text
-                        """,
-                        returnStdout: true
-                    ).trim()
+                    INSTANCE_ID = getInstanceId(INSTANCE_NAME, REGION)
 
                     if (!INSTANCE_ID) {
                         error("No EC2 instance found with Name: ${INSTANCE_NAME}")
@@ -34,17 +25,34 @@ pipeline {
         stage('Run EC2 Action') {
             steps {
                 script {
-                    if (params.ACTION == 'start') {
-                        sh "aws ec2 start-instances --instance-ids ${INSTANCE_ID} --region ${REGION}"
-                        echo "Start command sent to EC2 instance: ${INSTANCE_ID}"
-                    } else if (params.ACTION == 'stop') {
-                        sh "aws ec2 stop-instances --instance-ids ${INSTANCE_ID} --region ${REGION}"
-                        echo "Stop command sent to EC2 instance: ${INSTANCE_ID}"
-                    } else {
-                        error("Invalid action: ${params.ACTION}")
-                    }
+                    performEC2Action(params.ACTION, INSTANCE_ID, REGION)
                 }
             }
         }
+    }
+}
+
+def getInstanceId(instanceName, region) {
+    return sh(
+        script: """
+        aws ec2 describe-instances \\
+            --filters "Name=tag:Name,Values=${instanceName}" "Name=instance-state-name,Values=running,stopped" \\
+            --query "Reservations[*].Instances[*].InstanceId" \\
+            --region ${region} \\
+            --output text
+        """,
+        returnStdout: true
+    ).trim()
+}
+
+def performEC2Action(action, instanceId, region) {
+    if (action == 'start') {
+        sh "aws ec2 start-instances --instance-ids ${instanceId} --region ${region}"
+        echo "Start command sent to EC2 instance: ${instanceId}"
+    } else if (action == 'stop') {
+        sh "aws ec2 stop-instances --instance-ids ${instanceId} --region ${region}"
+        echo "Stop command sent to EC2 instance: ${instanceId}"
+    } else {
+        error("Invalid action: ${action}")
     }
 }
