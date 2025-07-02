@@ -1,9 +1,5 @@
 pipeline {
     agent any
-  
-     parameters {
-        choice(name: 'ACTION', choices: ['start', 'stop'], description: 'Choose EC2 action')
-     }
     stages {
         stage('Run EC2 Action') {
             steps {
