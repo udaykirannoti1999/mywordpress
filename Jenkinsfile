@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'ecs-fragate'}
 
     environment {
         INSTANCE_NAME = 'jenkins server'   
